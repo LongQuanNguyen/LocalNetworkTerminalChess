@@ -38,17 +38,16 @@ class Client:
 
         After the board is printed, it is flipped back to its original state if the view was flipped for the black player.
         """
-
         os.system('cls' if os.name == 'nt' else 'clear')
         piece_emoji = self.get_piece_emojis()
-        print(f"You are {'Transparent - White' if self.color == 'W' else 'Solid - Black'}\n")    
+        print(f"You are {'Transparent - White' if self.color == 'W' else 'Solid - Black'}")
+        print("Syntax: <initRowCol><destRowCol>\n")    
         print('  a b c d e f g h')
 
         # Flip the board if the client's color is black
         if self.color == 'B':
             self.board = self.board.mirror()
 
-        # Print each row with row label
         for i in range(7, -1, -1):
             # Print the correct row number based on the client's color
             row_number = 8 - i if self.color == 'B' else i + 1
@@ -64,6 +63,21 @@ class Client:
 
 
     def start(self, host = '127.0.0.1', port = 12345):
+        """
+        Starts the client and connects it to the server.
+
+        This method connects the client to the server at the specified host and port,
+        receives the color information from the server, and then enters a loop where it
+        receives data from the server, updates the board state, prints the board, and
+        prompts the user for a move if it's their turn.
+
+        Parameters:
+        host (str): The host address of the server. Defaults to '127.0.0.1'.
+        port (int): The port number of the server. Defaults to 12345.
+
+        Raises:
+        socket.error: If there's a problem with the network connection.
+        """
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             s.connect((host, port))
             # Receive and store color information
@@ -73,13 +87,14 @@ class Client:
                     data = s.recv(1024)
                     if data:
                         data_decoded = data.decode()
-                        print('Received', repr(data_decoded))
-                        if data_decoded[0] == 'B':  # Check if the message is a board state
+                        if data_decoded[0] == 'B':  
+                            # Check if the message is a board state
                             # Remove the 'B' prefix before setting the FEN
                             self.board.set_fen(data_decoded[1:])
                         self.print_board()
                         print('\n')
-                        if self.color == ('W' if self.board.turn else 'B'):  # Check if it's this client's turn
+                        # Check client turn
+                        if self.color == ('W' if self.board.turn else 'B'):  
                             move = input("Enter your move: ")
                             s.sendall(move.encode())
                         else:
@@ -87,6 +102,9 @@ class Client:
                 except socket.error:
                     print("Lost connection to server.")
                     break
+
+
+
 if __name__ == "__main__":
     client = Client()
     client.start()

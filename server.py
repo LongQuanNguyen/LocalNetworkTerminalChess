@@ -52,6 +52,8 @@ class Server:
                 for c in self.connections:
                     c.sendall(('B' + self.game.board.fen()).encode())
 
+
+
 if __name__ == "__main__":
     game = ChessGame()
     server = Server(game)
