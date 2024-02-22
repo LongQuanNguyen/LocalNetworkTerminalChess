@@ -28,9 +28,13 @@ class Server:
             self.game_loop()
 
     def game_loop(self):
+        """
+        Main game loop for the server. It receives moves from each client, validates them, 
+        applies them to the game board, and sends the updated board state to all clients.
+        """
         while True:
             for conn in self.connections:
-                while True:  # Loop until a valid move is received
+                while True:
                     try:
                         data = conn.recv(1024)
                         if not data:
@@ -38,14 +42,13 @@ class Server:
                         move = chess.Move.from_uci(data.decode())
                         if move in self.game.board.legal_moves:
                             self.game.board.push(move)
-                            break  # Break the loop if the move was valid
+                            break
                         else:
-                            conn.sendall('Invalid move. Please try again.'.encode())
-                            continue  # Wait for a new move
+                            conn.sendall('Invalid move.'.encode())
+                            continue
                     except (ValueError, socket.error):
-                        conn.sendall('Invalid input. Please try again.'.encode())
-                        continue  # Wait for a new move
-                # Send updated board state to all clients
+                        conn.sendall('Invalid input.'.encode())
+                        continue
                 for c in self.connections:
                     c.sendall(('B' + self.game.board.fen()).encode())
 

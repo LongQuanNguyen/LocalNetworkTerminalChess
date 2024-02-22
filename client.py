@@ -79,12 +79,14 @@ class Client:
                             self.board.set_fen(data_decoded[1:])
                         self.print_board()
                         print('\n')
-                        move = input("Enter your move: ")
-                        s.sendall(move.encode())
+                        if self.color == ('W' if self.board.turn else 'B'):  # Check if it's this client's turn
+                            move = input("Enter your move: ")
+                            s.sendall(move.encode())
+                        else:
+                            print("Waiting for other player's move...")
                 except socket.error:
                     print("Lost connection to server.")
                     break
-
 if __name__ == "__main__":
     client = Client()
     client.start()
